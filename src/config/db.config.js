@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import mongoose from 'mongoose';
-import {config} from './app.config.js';
+import config from './app.config.js';
 
 const dataBaseConnection = () => {
    // mongoose.set('useCreateIndex', true);

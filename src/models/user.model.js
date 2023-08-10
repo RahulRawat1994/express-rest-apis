@@ -1,20 +1,20 @@
 import mongoose from 'mongoose'
+import httpStatus from 'http-status'
 import bcrypt from 'bcryptjs'
-import {config} from '../config/app.config.js';
+import config from '../config/app.config.js';
 import {mail} from '../config/mail.config.js';
-import { 
-  randomStrToken
-} from '../utils.js';
+import ApiError from '../utils/ApiError.js';
+import { generateRandomValue } from '../utils/index.js';
 const userSchema = mongoose.Schema(
   {
     name:{
       type: String,
-      required: true,
+      required: [true, '{PATH} is required'],
       trim: true,
     },
     email:{
       type: String,
-      required: true,
+      required: [true, '{PATH} is required'],
       trim:true,
       unique:true,
       validate: {
@@ -26,8 +26,8 @@ const userSchema = mongoose.Schema(
     },
     password:{
       type:String,
-      required: true,
-      minlength:6,
+      required: [true, '{PATH} is required'],
+      minlength:[6, '{PATH} should at least 6 character long'],
       maxlength:66,
     },
     profile:{
@@ -52,7 +52,7 @@ const userSchema = mongoose.Schema(
 
 userSchema.pre('save', async function() {
   this.password = await this.generatePasswordHash();
-  this.resetToken = randomStrToken()
+  this.resetToken = generateRandomValue(20)
 });
 userSchema.post('save', async function (doc) {
   this.sendVerificationEmail(doc);
@@ -95,9 +95,19 @@ userSchema.methods.generatePasswordHash = async function() {
 };
 
 userSchema.methods.validatePassword = async function(password) {
-  console.log(password)
   const checkPassword = await bcrypt.compare(password, this.password);
   return checkPassword;
+};
+
+userSchema.statics.findOneOrFail = async function(conditions) {
+  const user  = await this.findOne(conditions);
+  if(!user){
+    throw new ApiError(
+      httpStatus.BAD_REQUEST, 
+      'User doesn\'t exist',
+    );
+  }
+  return user;
 };
 
 /**

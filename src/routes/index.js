@@ -1,9 +1,17 @@
 import express from 'express'
-import userController from '../controllers/userController.js';
-const router = express.Router();
 import multer from 'multer';
-import authController from '../controllers/authController.js';
+//Controllers
+import authController from '../controllers/auth.controller.js';
+import userController from '../controllers/user.controller.js';
+// Validations
+import authValidation from '../validations/auth.validation.js';
+import validate from '../middlewares/validate.js';
+// Initialize routers
+const router = express.Router();
 
+/**
+ * Upload image using multer
+ */
 const upload = multer({ 
   dest: "uploads/",
   storage: multer.diskStorage({
@@ -15,7 +23,7 @@ const upload = multer({
       cb(null, file.fieldname + '-' + uniqueSuffix+ '-'+file.originalname)
     }
   })
- });
+});
 
 router.get("/users", userController.get)
 router.get("/user/:id", userController.view)
@@ -24,8 +32,9 @@ router.put("/user/:id", userController.update)
 router.delete("/user/:id", userController.delete)
 
 router.post("/register",upload.single('profile'), authController.register)
-router.post("/login", authController.login)
-router.get("/verify-email/:token", authController.verifyEmail)
-router.post("/forgot-password", authController.forgotPassword)
-router.post("/reset-password", authController.changePassword)
+router.post("/login",validate(authValidation.login), authController.login)
+router.get("/verify-email/:token",validate(authValidation.verifyEmal), authController.verifyEmail)
+router.post("/forgot-password",validate(authValidation.forgotPassword), authController.forgotPassword)
+router.post("/reset-password",validate(authValidation.resetPassword), authController.changePassword)
+
 export default router;
