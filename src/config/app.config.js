@@ -3,7 +3,7 @@ import 'dotenv/config';
 export default {
   env             : process.env.ENV,
   PORT            : process.env.PORT || 3000,
-  DB_CONN_STR     : process.env.DB_CONN_STR,
+  MONGODB_URL     : process.env.MONGODB_URL,
   SECRET          : process.env.SECRET,
   ADMIN_ROLE      : process.env.ADMIN_ROLE,
   DEFAULT_ROLE    : process.env.DEFAULT_ROLE,
